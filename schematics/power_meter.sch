@@ -29,7 +29,7 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:user
-LIBS:raspberrrypi_hat-cache
+LIBS:power_meter-cache
 EELAYER 25 0
 EELAYER END
 $Descr A3 16535 11693
@@ -45,7 +45,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L OX40HAT J2
+L PI40HAT J2
 U 1 1 58DFC771
 P 2600 2250
 F 0 "J2" H 2950 2350 50  0000 C CNN
@@ -658,7 +658,6 @@ F 3 "" H 15200 2650 50  0000 C CNN
 	1    15200 2650
 	1    0    0    -1  
 $EndComp
-NoConn ~ 13900 4150
 $Comp
 L +3V3 #PWR027
 U 1 1 59ED8FBE
@@ -826,7 +825,6 @@ F 3 "" H 15200 4150 50  0000 C CNN
 	1    15200 4150
 	1    0    0    -1  
 $EndComp
-NoConn ~ 13900 5650
 $Comp
 L +3V3 #PWR032
 U 1 1 59EDB1E7
@@ -994,7 +992,6 @@ F 3 "" H 15200 5650 50  0000 C CNN
 	1    15200 5650
 	1    0    0    -1  
 $EndComp
-NoConn ~ 13900 7150
 $Comp
 L +3V3 #PWR037
 U 1 1 59EDB269
@@ -1162,7 +1159,6 @@ F 3 "" H 15200 7150 50  0000 C CNN
 	1    15200 7150
 	1    0    0    -1  
 $EndComp
-NoConn ~ 10200 2650
 $Comp
 L +3V3 #PWR042
 U 1 1 59EDCC5D
@@ -1330,7 +1326,6 @@ F 3 "" H 11500 2650 50  0000 C CNN
 	1    11500 2650
 	1    0    0    -1  
 $EndComp
-NoConn ~ 10200 4150
 $Comp
 L +3V3 #PWR047
 U 1 1 59EDCCDF
@@ -1498,7 +1493,6 @@ F 3 "" H 11500 4150 50  0000 C CNN
 	1    11500 4150
 	1    0    0    -1  
 $EndComp
-NoConn ~ 10200 5650
 $Comp
 L +3V3 #PWR052
 U 1 1 59EDCD61
@@ -1666,7 +1660,6 @@ F 3 "" H 11500 5650 50  0000 C CNN
 	1    11500 5650
 	1    0    0    -1  
 $EndComp
-NoConn ~ 10200 7150
 $Comp
 L +3V3 #PWR057
 U 1 1 59EDCDE3
@@ -2171,8 +2164,6 @@ F 3 "" H 10500 2750 60  0001 C CNN
 	1    10700 2700
 	1    0    0    1   
 $EndComp
-NoConn ~ 10200 2750
-NoConn ~ 10200 2850
 NoConn ~ 10200 4250
 NoConn ~ 10200 4350
 NoConn ~ 10200 5750
@@ -2720,5 +2711,46 @@ Wire Wire Line
 	10200 4700 10200 4450
 Wire Wire Line
 	10200 3200 10200 2950
-NoConn ~ 13900 2650
+Wire Wire Line
+	10200 2650 10100 2650
+Wire Wire Line
+	10100 2650 10100 3200
+Connection ~ 10100 3200
+NoConn ~ 10200 2850
+NoConn ~ 10200 2750
+Wire Wire Line
+	13900 2650 13800 2650
+Wire Wire Line
+	13800 2650 13800 3200
+Connection ~ 13800 3200
+Wire Wire Line
+	10200 4150 10100 4150
+Wire Wire Line
+	10100 4150 10100 4700
+Connection ~ 10100 4700
+Wire Wire Line
+	10200 5650 10100 5650
+Wire Wire Line
+	10100 5650 10100 6200
+Connection ~ 10100 6200
+Wire Wire Line
+	13900 4150 13800 4150
+Wire Wire Line
+	13800 4150 13800 4700
+Connection ~ 13800 4700
+Wire Wire Line
+	13900 5650 13800 5650
+Wire Wire Line
+	13800 5650 13800 6200
+Connection ~ 13800 6200
+Wire Wire Line
+	13900 7150 13800 7150
+Wire Wire Line
+	13800 7150 13800 7700
+Connection ~ 13800 7700
+Wire Wire Line
+	10200 7150 10100 7150
+Wire Wire Line
+	10100 7150 10100 7700
+Connection ~ 10100 7700
 $EndSCHEMATC

@@ -1,4 +1,4 @@
-update=Tue 24 Oct 2017 03:51:33 PM CEST
+update=Wed 25 Oct 2017 11:03:55 PM CEST
 version=1
 last_client=kicad
 [general]
@@ -60,4 +60,4 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=/home/simon/pro/kicad/parts/user
+LibName30=user

@@ -1,0 +1,324 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:voltage-frontend-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L TRANSFO T1
+U 1 1 59F1C2C7
+P 2500 3300
+F 0 "T1" H 2500 3550 50  0000 C CNN
+F 1 "TRANSFO" H 2500 3000 50  0000 C CNN
+F 2 "user:BV-202-0154" H 2500 3300 50  0001 C CNN
+F 3 "" H 2500 3300 50  0000 C CNN
+	1    2500 3300
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X04 P1
+U 1 1 59F1C3E0
+P 1400 3350
+F 0 "P1" H 1400 3600 50  0000 C CNN
+F 1 "230V AC IN" V 1500 3350 50  0000 C CNN
+F 2 "Connect:bornier4" H 1400 3350 50  0001 C CNN
+F 3 "" H 1400 3350 50  0000 C CNN
+	1    1400 3350
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	1600 3500 2100 3500
+$Comp
+L CONN_01X02 P2
+U 1 1 59F1C56B
+P 3800 3300
+F 0 "P2" H 3800 3450 50  0000 C CNN
+F 1 "6V AC OUT L1" V 3900 3300 50  0000 C CNN
+F 2 "Connect:bornier2" H 3800 3300 50  0001 C CNN
+F 3 "" H 3800 3300 50  0000 C CNN
+	1    3800 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 3500 3500 3500
+Wire Wire Line
+	3500 3350 3600 3350
+Wire Wire Line
+	3500 3250 3600 3250
+$Comp
+L CONN_01X01 P5
+U 1 1 59F1C82E
+P 6300 1800
+F 0 "P5" H 6300 1900 50  0000 C CNN
+F 1 "mounting hole" V 6400 1800 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 6300 1800 50  0001 C CNN
+F 3 "" H 6300 1800 50  0000 C CNN
+	1    6300 1800
+	0    1    1    0   
+$EndComp
+NoConn ~ 6300 1600
+$Comp
+L CONN_01X01 P7
+U 1 1 59F1CA8A
+P 6900 1800
+F 0 "P7" H 6900 1900 50  0000 C CNN
+F 1 "mounting hole" V 7000 1800 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 6900 1800 50  0001 C CNN
+F 3 "" H 6900 1800 50  0000 C CNN
+	1    6900 1800
+	0    1    1    0   
+$EndComp
+NoConn ~ 6900 1600
+$Comp
+L CONN_01X01 P6
+U 1 1 59F1CAF1
+P 6300 2400
+F 0 "P6" H 6300 2500 50  0000 C CNN
+F 1 "mounting hole" V 6400 2400 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 6300 2400 50  0001 C CNN
+F 3 "" H 6300 2400 50  0000 C CNN
+	1    6300 2400
+	0    1    1    0   
+$EndComp
+NoConn ~ 6300 2200
+$Comp
+L CONN_01X01 P8
+U 1 1 59F1CAF8
+P 6900 2400
+F 0 "P8" H 6900 2500 50  0000 C CNN
+F 1 "mounting hole" V 7000 2400 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 6900 2400 50  0001 C CNN
+F 3 "" H 6900 2400 50  0000 C CNN
+	1    6900 2400
+	0    1    1    0   
+$EndComp
+NoConn ~ 6900 2200
+Wire Wire Line
+	2000 3500 2000 3600
+$Comp
+L PWR_FLAG #FLG1
+U 1 1 59F1CDF3
+P 2000 3600
+F 0 "#FLG1" H 2000 3695 50  0001 C CNN
+F 1 "PWR_FLAG" H 2000 3780 50  0000 C CNN
+F 2 "" H 2000 3600 50  0000 C CNN
+F 3 "" H 2000 3600 50  0000 C CNN
+	1    2000 3600
+	-1   0    0    1   
+$EndComp
+Connection ~ 2000 3500
+Wire Wire Line
+	1600 3400 2000 3400
+Wire Wire Line
+	2100 3100 2000 3100
+Wire Wire Line
+	2000 3100 2000 3400
+$Comp
+L FUSE F3
+U 1 1 59FC7686
+P 3200 3100
+F 0 "F3" H 3300 3150 50  0000 C CNN
+F 1 "3A" H 3100 3050 50  0000 C CNN
+F 2 "Fuse_Holders_and_Fuses:Fuseholder5x20_horiz_open_lateral_Type-II" H 3200 3100 50  0001 C CNN
+F 3 "" H 3200 3100 50  0000 C CNN
+	1    3200 3100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 3100 2900 3100
+Wire Wire Line
+	3450 3100 3500 3100
+Wire Wire Line
+	3500 3500 3500 3350
+Wire Wire Line
+	3500 3100 3500 3250
+$Comp
+L TRANSFO T3
+U 1 1 59FC814A
+P 2500 2600
+F 0 "T3" H 2500 2850 50  0000 C CNN
+F 1 "TRANSFO" H 2500 2300 50  0000 C CNN
+F 2 "user:BV-202-0154" H 2500 2600 50  0001 C CNN
+F 3 "" H 2500 2600 50  0000 C CNN
+	1    2500 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P4
+U 1 1 59FC8150
+P 3800 2600
+F 0 "P4" H 3800 2750 50  0000 C CNN
+F 1 "6V AC OUT L2" V 3900 2600 50  0000 C CNN
+F 2 "Connect:bornier2" H 3800 2600 50  0001 C CNN
+F 3 "" H 3800 2600 50  0000 C CNN
+	1    3800 2600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 2800 3500 2800
+Wire Wire Line
+	3500 2650 3600 2650
+Wire Wire Line
+	3500 2550 3600 2550
+$Comp
+L FUSE F2
+U 1 1 59FC8159
+P 3200 2400
+F 0 "F2" H 3300 2450 50  0000 C CNN
+F 1 "3A" H 3100 2350 50  0000 C CNN
+F 2 "Fuse_Holders_and_Fuses:Fuseholder5x20_horiz_open_lateral_Type-II" H 3200 2400 50  0001 C CNN
+F 3 "" H 3200 2400 50  0000 C CNN
+	1    3200 2400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 2400 2900 2400
+Wire Wire Line
+	3450 2400 3500 2400
+Wire Wire Line
+	3500 2800 3500 2650
+Wire Wire Line
+	3500 2400 3500 2550
+$Comp
+L TRANSFO T2
+U 1 1 59FC8203
+P 2500 1900
+F 0 "T2" H 2500 2150 50  0000 C CNN
+F 1 "TRANSFO" H 2500 1600 50  0000 C CNN
+F 2 "user:BV-202-0154" H 2500 1900 50  0001 C CNN
+F 3 "" H 2500 1900 50  0000 C CNN
+	1    2500 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P3
+U 1 1 59FC8209
+P 3800 1900
+F 0 "P3" H 3800 2050 50  0000 C CNN
+F 1 "6V AC OUT L3" V 3900 1900 50  0000 C CNN
+F 2 "Connect:bornier2" H 3800 1900 50  0001 C CNN
+F 3 "" H 3800 1900 50  0000 C CNN
+	1    3800 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 2100 3500 2100
+Wire Wire Line
+	3500 1950 3600 1950
+Wire Wire Line
+	3500 1850 3600 1850
+$Comp
+L FUSE F1
+U 1 1 59FC8212
+P 3200 1700
+F 0 "F1" H 3300 1750 50  0000 C CNN
+F 1 "3A" H 3100 1650 50  0000 C CNN
+F 2 "Fuse_Holders_and_Fuses:Fuseholder5x20_horiz_open_lateral_Type-II" H 3200 1700 50  0001 C CNN
+F 3 "" H 3200 1700 50  0000 C CNN
+	1    3200 1700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 1700 2900 1700
+Wire Wire Line
+	3450 1700 3500 1700
+Wire Wire Line
+	3500 2100 3500 1950
+Wire Wire Line
+	3500 1700 3500 1850
+Wire Wire Line
+	2100 2400 1900 2400
+Wire Wire Line
+	1900 2400 1900 3300
+Wire Wire Line
+	1900 3300 1600 3300
+Wire Wire Line
+	1600 3200 1800 3200
+Wire Wire Line
+	1800 3200 1800 1700
+Wire Wire Line
+	1800 1700 2100 1700
+$Comp
+L GND #PWR1
+U 1 1 59FC8585
+P 1700 3600
+F 0 "#PWR1" H 1700 3350 50  0001 C CNN
+F 1 "GND" H 1700 3450 50  0000 C CNN
+F 2 "" H 1700 3600 50  0000 C CNN
+F 3 "" H 1700 3600 50  0000 C CNN
+	1    1700 3600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1700 3600 1700 3500
+Connection ~ 1700 3500
+$Comp
+L GND #PWR3
+U 1 1 59FC8615
+P 2000 2900
+F 0 "#PWR3" H 2000 2650 50  0001 C CNN
+F 1 "GND" H 2000 2750 50  0000 C CNN
+F 2 "" H 2000 2900 50  0000 C CNN
+F 3 "" H 2000 2900 50  0000 C CNN
+	1    2000 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2000 2900 2000 2800
+Wire Wire Line
+	2000 2800 2100 2800
+$Comp
+L GND #PWR2
+U 1 1 59FC86B1
+P 2000 2200
+F 0 "#PWR2" H 2000 1950 50  0001 C CNN
+F 1 "GND" H 2000 2050 50  0000 C CNN
+F 2 "" H 2000 2200 50  0000 C CNN
+F 3 "" H 2000 2200 50  0000 C CNN
+	1    2000 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2000 2200 2000 2100
+Wire Wire Line
+	2000 2100 2100 2100
+$EndSCHEMATC

@@ -1,4 +1,4 @@
-update=Wed 25 Oct 2017 11:03:55 PM CEST
+update=Sat 04 Nov 2017 08:44:18 PM CET
 version=1
 last_client=kicad
 [general]
@@ -29,7 +29,7 @@ version=1
 NetIExt=net
 [eeschema]
 version=1
-LibDir=
+LibDir=../../schematics
 [eeschema/libraries]
 LibName1=power
 LibName2=device

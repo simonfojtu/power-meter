@@ -35,10 +35,10 @@ EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
-Title "Raspberry Pi HAT"
-Date ""
-Rev "A"
-Comp ""
+Title "AC power meter Raspberry Pi HAT"
+Date "2017-11-04"
+Rev "1"
+Comp "Simon Fojtu"
 Comment1 ""
 Comment2 ""
 Comment3 ""

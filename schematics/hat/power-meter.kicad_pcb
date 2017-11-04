@@ -2,8 +2,8 @@
 
   (general
     (links 198)
-    (no_connects 18)
-    (area 66.949999 56.949999 132.050001 113.550001)
+    (no_connects 0)
+    (area 64.392599 55.88 134.997401 116.582401)
     (thickness 1.6)
     (drawings 24)
     (tracks 438)
@@ -13,6 +13,13 @@
   )
 
   (page A4)
+  (title_block
+    (title "AC power meter Raspberry Pi HAT")
+    (date 2017-11-04)
+    (rev 1)
+    (company "Simon Fojtu")
+  )
+
   (layers
     (0 F.Cu signal)
     (31 B.Cu signal)
@@ -37,7 +44,7 @@
   )
 
   (setup
-    (last_trace_width 0.508)
+    (last_trace_width 0.254)
     (user_trace_width 0.1524)
     (user_trace_width 0.254)
     (user_trace_width 0.508)
@@ -68,7 +75,7 @@
     (visible_elements FFFFFF7F)
     (pcbplotparams
       (layerselection 0x010f0_80000001)
-      (usegerberextensions false)
+      (usegerberextensions true)
       (excludeedgelayer true)
       (linewidth 0.100000)
       (plotframeref false)
@@ -4471,7 +4478,7 @@
   (gr_text CE0/CE1 (at 99.06 78.74) (layer F.SilkS)
     (effects (font (size 0.762 0.762) (thickness 0.127)))
   )
-  (gr_text "AC sensing hat\nfor Raspberry PI\n\nSimon Fojtu\n20171023\nv0.1" (at 72.39 85.09) (layer F.SilkS)
+  (gr_text "AC power meter\nRaspberry Pi HAT\n\nSimon Fojtu\n20171104\nrev.1" (at 72.39 85.09) (layer F.SilkS)
     (effects (font (size 1.143 1.143) (thickness 0.2032)) (justify left))
   )
   (gr_line (start 68 77) (end 71 77) (angle 90) (layer Edge.Cuts) (width 0.1))

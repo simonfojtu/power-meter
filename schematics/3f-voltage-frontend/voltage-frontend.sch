@@ -34,10 +34,10 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
+Title "3F AC power meter voltage frontend"
+Date "2017-11-04"
+Rev "1"
+Comp "Simon Fojtu"
 Comment1 ""
 Comment2 ""
 Comment3 ""

@@ -9,5 +9,5 @@ cd power_meter
 virtualenv --python=python3.5 venv
 . venv/bin/activate
 
-pip install adafruit-mcp3008
+pip install adafruit-mcp3008 numpy
 

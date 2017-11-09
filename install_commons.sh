@@ -5,6 +5,6 @@
 
 TARGET=$1
 
-PACKAGES="vim git screen build-essential python3-dev virtualenv"
+PACKAGES="vim git screen build-essential python3-dev virtualenv liblapack-dev"
 
 ssh $TARGET "sudo apt-get install -y $PACKAGES"

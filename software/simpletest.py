@@ -85,10 +85,13 @@ print('Starting measurements')
 
 counter = 0
 sum_of_powers = 0
+ssu = 0
+ssi = 0
 
 num_periods = 0
 
 u = 0
+
 
 while True:
     last_u = u
@@ -96,12 +99,23 @@ while True:
     u = adc.read(1)
 
     sum_of_powers += i * u
+    ssu += u * u
+    ssi += i * i
     counter += 1
     if last_u <= 0 and u > 0:
         num_periods += 1
         if num_periods == 50:
-            print('{:3.1f}W'.format(sum_of_powers / counter))
+            real_power = sum_of_powers / counter
+            vrms = np.sqrt(ssu / counter)
+            irms = np.sqrt(ssi / counter)
+            apparent_power = vrms * irms
+            power_factor = real_power / apparent_power
+            print('real power: {:3.1f}W, apparent power: {:3.1f}VA, power factor: {:2.1f}%, Vrms: {:3.1f}V, Irms: {:3.1f}A'.format(
+                real_power, apparent_power, 100*power_factor, vrms, irms))
+
             counter = 0
             sum_of_powers = 0
             num_periods = 0
+            ssu = 0
+            ssi = 0
 

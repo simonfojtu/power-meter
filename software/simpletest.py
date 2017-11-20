@@ -1,11 +1,22 @@
 import argparse
 from datetime import datetime
 import numpy as np
-import os.path
+import os
 import subprocess
 # Import SPI library (for hardware SPI) and MCP3008 library.
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
+
+
+def check_pid(pid):        
+    """ Check For the existence of a unix pid. """
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
+
 
 
 class ADC:
@@ -58,22 +69,28 @@ class RRD:
         self.graph_directory = graph_directory 
         if not os.path.isfile(filename):
             subprocess.call(['rrdtool', 'create', filename, *args])
+        self.pid = None
 
     def update(self, values, timestamp='N'):
         data=':'.join([str(v) for v in values])
-        subprocess.Popen(['rrdtool', 'update', self.filename, str(timestamp) + ':' + data])
+        self.pid = subprocess.Popen(['rrdtool', 'update', self.filename, str(timestamp) + ':' + data]).pid
+
 
     def graph(self, *, start='1day', title='power consumption'):
         fname = os.path.join(self.graph_directory, 'graph_' + start + '.png')
-        subprocess.Popen(
-            [
-                'rrdtool', 'graph', fname,
-                '-s', '-' + start,
-                '-t', title,
-                *self.graph_args,
-            ],
-            stdout=subprocess.DEVNULL
-            )
+        if self.pid is not None and not check_pid(self.pid):
+            self.pid = None
+
+        if self.pid is None:
+            self.pid = subprocess.Popen(
+                [
+                    'rrdtool', 'graph', fname,
+                    '-s', '-' + start,
+                    '-t', title,
+                    *self.graph_args,
+                ],
+                stdout=subprocess.DEVNULL
+                ).pid
 
 
 parser = argparse.ArgumentParser(description='AC power measurement')

@@ -1,5 +1,6 @@
 import argparse
-from datetime import datetime
+import datetime
+from itertools import count
 import numpy as np
 import os
 import subprocess
@@ -8,204 +9,309 @@ import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
 
 
-def check_pid(pid):        
-    """ Check For the existence of a unix pid. """
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    else:
-        return True
-
-
-
 class ADC:
-    MAX_NUM_CHANNELS=8
-
-    def __init__(self, spi_port = 0, spi_device = 0, *, num_channels = MAX_NUM_CHANNELS):
+    def __init__(self, spi_port = 0, spi_device = 0):
         self.mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(spi_port, spi_device))
-        self.num_channels = num_channels
-        self.calibrated_zero = np.zeros((self.num_channels,))
-        self.calibrated_gain = np.zeros((self.num_channels,))
 
-
-    def read_raw(self, idx):
+    def read(self, idx):
         """Return analog value on channel idx"""
         return self.mcp.read_adc(idx)
 
 
-    def read(self, idx):
-        return (self.read_raw(idx) - self.calibrated_zero[idx]) * self.calibrated_gain[idx]
-
-
-    def set_zero(self, idx, value):
-        self.calibrated_zero[idx] = value
-
-
-    def set_gain(self, idx, value):
-        self.calibrated_gain[idx] = value
-
-
-    def calibrate_zero(self, idx, count=1000):
-        """Assuming a 'zero' signal on channel idx, compute the mean over count measurements"""
-        x = 0
-        for _ in range(count):
-            x += self.read_raw(idx)
-        self.calibrated_zero[idx] = x / count
-        return self.calibrated_zero[idx]
-
-
-    def calibrate_gain(self, idx, count=1000):
-        x = np.zeros((count,))
-        for i in range(count):
-            x[i] = self.read(idx)
-        return np.mean(np.sort(x)[-count//10:])
-
-
 class RRD:
     def __init__(self, filename, *, graph_directory = '.', create=[], graph=[]):
+        """Create rrd file if necessary"""
+        # TODO Check that the existing rrd file is compatible with current channels
         self.filename = filename
         self.graph_args = graph
         self.graph_directory = graph_directory 
         if not os.path.isfile(filename):
-            subprocess.call(['rrdtool', 'create', filename, *args])
+            print('Creating RRD in {}'.format(filename))
+            subprocess.call(['rrdtool', 'create', filename, *create])
         self.pid = None
 
     def update(self, values, timestamp='N'):
+        # TODO handle error
         data=':'.join([str(v) for v in values])
-        self.pid = subprocess.Popen(['rrdtool', 'update', self.filename, str(timestamp) + ':' + data]).pid
+        subprocess.Popen(['rrdtool', 'update', self.filename, str(timestamp) + ':' + data])
 
 
     def graph(self, *, start='1day', title='power consumption'):
         fname = os.path.join(self.graph_directory, 'graph_' + start + '.png')
-        if self.pid is not None and not check_pid(self.pid):
-            self.pid = None
+        subprocess.Popen(
+            [
+                'rrdtool', 'graph', fname,
+                '-s', '-' + start,
+                '-t', title,
+                *self.graph_args,
+            ],
+            stdout=subprocess.DEVNULL
+            )
 
-        if self.pid is None:
-            self.pid = subprocess.Popen(
-                [
-                    'rrdtool', 'graph', fname,
-                    '-s', '-' + start,
-                    '-t', title,
-                    *self.graph_args,
-                ],
-                stdout=subprocess.DEVNULL
-                ).pid
 
+class Channel:
+    class Calibrated(BaseException):
+        pass
+
+
+    def __init__(self, adc, str_config):
+        self.adc = adc
+        self.id = 0
+        self.phase = 0
+        self.V = True
+        self.zero = 0
+        self.gain = 1
+        self.colour = '#ff0000'
+        self.description = ''
+        args = str_config.split(':')
+        length = len(args)
+        
+        self.id = int(args[0])
+        if length == 3 and args[2] == '?':
+            # print RMS
+            self.zero = float(args[1])
+            print('Channel {} calibration: measured {} units RMS'.format(
+                self.id, self.get_rms()))
+            raise Channel.Calibrated
+        elif length == 7:
+            self.phase = int(args[1])
+            if args[2] not in ('V', 'C'):
+                raise ValueError('{} not "V" or "C" for voltage and current respectively')
+            self.V = 'V' == args[2]
+
+            self.zero = float(args[3])
+            self.gain = float(args[4])
+            self.colour = args[5]
+            self.description = args[6]
+        else:
+            raise ValueError('Invalid channel configuration: {}'.format(str_config))
+
+
+    def __str__(self):
+        return 'Channel  idx: {}, phase: {}, {}, zero: {}, gain: {}, color: {}, {}'.format(
+            self.id, self.phase, 'V' if self.V else 'C', self.zero, self.gain, self.colour, self.description)
+
+
+    def get_unit(self):
+        return 'V' if self.V else 'A'
+
+
+    def _read_raw(self):
+        """Read data from ADC for this channel"""
+        return adc.read(self.id)
+
+
+    def read(self):
+        """Return calibrated value for this channel"""
+        self.value = (self._read_raw() - self.zero) * self.gain
+        return self.value
+
+
+    def get(self):
+        """Return calibrated value for this channel without reading from the ADC if possible"""
+        if self.value is not None:
+           return self.value
+
+        return self.read()
+
+
+    def get_rms(self, count=1000):
+        """Return RMS"""
+        assert count > 0
+        ssq = 0
+        for i in range(count):
+            x = self.read()
+            ssq += x*x
+        return np.sqrt(ssq / count)
+
+
+class Meter:
+    class PowerMeter:
+        def __init__(self, frequency, voltage_channel, current_channel):
+            self.frequency = frequency
+            self.voltage_chn = voltage_channel
+            self.current_chn = current_channel
+
+            self.sp = 0
+            self.counter = 0
+            self.num_periods = 0
+            self.last_voltage = 0
+
+            self.last_reading = 0
+
+
+        @property
+        def description(self):
+            return self.current_chn.description
+
+
+        @property
+        def colour(self):
+            return self.current_chn.colour
+
+
+        def getRealPower(self):
+            voltage = self.voltage_chn.get()
+            current = self.current_chn.get()
+            self.sp += voltage * current
+            self.counter += 1
+
+            if self.last_voltage <= 0 and voltage > 0:
+                self.num_periods += 1
+
+            self.last_voltage = voltage
+            fresh = False
+            if self.num_periods == self.frequency:
+                real_power = self.sp / self.counter
+                self.sp = 0
+                self.counter = 0
+                self.num_periods = 0
+                self.last_reading = real_power
+                fresh = True
+
+            return self.last_reading, fresh
+
+
+            
+    def __init__(self, adc, args):# ,channels_configs, *, frequency=50, verbose=False):
+        self.adc = adc
+        self.frequency = args.frequency
+        self.verbose = args.verbose
+        self.graphperiod = args.graphperiod
+        self.last_graph = datetime.datetime.now()
+        self.power_meters = tuple()
+        self.channels = {}
+        for cfg in args.channels:
+            try:
+                c = Channel(self.adc, cfg)
+                if self.verbose:
+                    print(c)
+                self.channels[c.id] = c
+            except Channel.Calibrated:
+                exit(0)
+
+        self.pairChannels()
+
+        rrd_create = [
+            '--step', '1s',
+            'RRA:AVERAGE:0.5:1s:10d',
+            'RRA:AVERAGE:0.5:1m:90d',
+            'RRA:AVERAGE:0.5:1h:18M',
+            'RRA:AVERAGE:0.5:1d:10y',
+            'RRA:MAX:0.5:1s:10d',
+            'RRA:MAX:0.5:1m:90d',
+            'RRA:MAX:0.5:1h:18M',
+            'RRA:MAX:0.5:1d:10y',
+        ]
+        for i in range(len(self.power_meters)):
+            rrd_create += 'DS:ch{}:GAUGE:5m:0:U'.format(i),
+
+        rrd_graph = [
+            '--lazy',
+            '--border', '0',
+            '-v', 'W',
+            '--color', 'BACK#101010',
+            '--color', 'CANVAS#000000',
+            '--color', 'FONT#ffffff',
+            '--font', 'LEGEND:7',
+        ]
+        for i,m in enumerate(self.power_meters):
+            rrd_graph += 'DEF:ch{0}={1}:ch{0}:AVERAGE'.format(i, args.rrdfile),
+            # TODO make color parametrizable
+            rrd_graph += 'LINE1:ch{}{}:{}'.format(i, m.colour, m.description),
+
+        self.rrd = RRD(
+            args.rrdfile,
+            graph_directory = args.graphdir,
+            create=rrd_create,
+            graph=rrd_graph
+        )
+
+        if args.verbose:
+            print('Meter initialized')
+
+
+    
+    def pairChannels(self):
+        # phase -> (voltage_idx, (current_indices, ..))
+        phase2voltage = {}
+        for cid in self.channels:
+            c = self.channels[cid]
+            if c.V:
+                if c.phase in phase2voltage:
+                    raise ValueError(
+                        'Only a single voltage measurement per phase is allowed. \
+                         voltage channels for phase {} found on index {} and {}'.format(
+                            c.phase, phase2voltage[c.phase], c.id))
+
+                phase2voltage[c.phase] = c.id
+
+        for cid in self.channels:
+            c = self.channels[cid]
+            if not c.V:
+                if not c.phase in phase2voltage:
+                    raise ValueError('Current channel {} on phase {} has no associated voltage channel.'.format(
+                        c.id, c.phase))
+                self.power_meters += (Meter.PowerMeter(
+                    self.frequency,
+                    self.channels[phase2voltage[c.phase]],
+                    c
+                )),
+
+        if self.verbose:
+            for meter in self.power_meters:
+                print('Power measurement "{}" on channels:\n\t{} (voltage)\n\t{} (current)'.format(
+                    meter.description,
+                    meter.voltage_chn,
+                    meter.current_chn))
+
+
+    def measure(self):
+        # Read current values on all channels
+        for cid in self.channels:
+            x = self.channels[cid].read()
+
+        # compute power from previously read input values
+        output = [0] * len(self.power_meters)
+        do_update = False
+        for i,meter in enumerate(self.power_meters):
+            real_power, fresh = meter.getRealPower()
+            output[i] = real_power
+            # TODO fix this if for some reason the first channel is off
+            do_update = i == 0 and fresh
+
+        if do_update:
+            if self.verbose:
+                print(output)
+            self.rrd.update(output)
+
+
+    def graph(self):
+        now = datetime.datetime.now()
+        if now > self.last_graph + datetime.timedelta(seconds=self.graphperiod):
+            if args.verbose:
+                print('do some graphing')
+            self.last_graph = now
+            # TODO parametrize the graphs
+            self.rrd.graph(start='1day')
+            self.rrd.graph(start='1week')
+            self.rrd.graph(start='1month')
+            self.rrd.graph(start='1year')
+
+        
 
 parser = argparse.ArgumentParser(description='AC power measurement')
-parser.add_argument('-n', type=int, default=8, help='Number of channels to use')
-parser.add_argument('-c', action='append', type=int, default=None, help='Return bias calibration value for given channel')
-parser.add_argument('-C', action='append', type=float, default=[], help='Zero calibration for each channel')
-parser.add_argument('-g', action='append', type=int, default=None, help='Return gain calibration value for given channel')
-parser.add_argument('-G', action='append', type=float, default=[], help='Gain calibration for each channel')
 parser.add_argument('--verbose', '-v', action='store_true', help='Be verbose')
-
-# Add parser to channel parameters:
-# #channel_number:#phase_number:<V/C>:zero:gain:description
+parser.add_argument('--frequency', '-f', type=int, default=50, help='Line frequency (50/60Hz)')
+parser.add_argument(type=str, nargs='+', dest='channels', help="Channel configuration in the following format: #channel_number:#phase_number:<V/C>:zero:gain:#RRGGBB[AA]:description")
+parser.add_argument('--rrdfile', type=str, default='power.rrd', help='Name of the rrd file')
+parser.add_argument('--graphdir', type=str, default='www/', help='Directory to store generated graphs')
+parser.add_argument('--graphperiod', type=int, default=60, help='Plot graph at most every N seconds')
 
 args = parser.parse_args()
-
-adc = ADC(num_channels = args.n)
-rrd = RRD('power.rrd',
-    graph_directory = 'www/',
-    create=[
-        '--step', '1s',
-        'DS:watt:GAUGE:5m:0:U',
-        'DS:va:GAUGE:5m:0:U', 
-        'RRA:AVERAGE:0.5:1s:10d',
-        'RRA:AVERAGE:0.5:1m:90d',
-        'RRA:AVERAGE:0.5:1h:18M',
-        'RRA:AVERAGE:0.5:1d:10y',
-        'RRA:MAX:0.5:1s:10d',
-        'RRA:MAX:0.5:1m:90d',
-        'RRA:MAX:0.5:1h:18M',
-        'RRA:MAX:0.5:1d:10y',
-    ],
-    graph=[
-        '--lazy',
-        '--border', '0',
-        '-v', 'W',
-        '--color', 'BACK#101010',
-        '--color', 'CANVAS#000000',
-        '--color', 'FONT#ffffff',
-        '--font', 'LEGEND:7',
-        'DEF:watt=power.rrd:watt:AVERAGE',
-        'LINE1:watt#FF0000']
-)
-
-if len(args.C) not in (0, adc.num_channels):
-    raise ValueError('Specify zero calibration either for all channels or for none')
-for i in range(len(args.C)):
-    adc.set_zero(i, args.C[i])
-if args.c is not None:
-    for channel in args.c:
-        print('Calibrating zero of channel {}'.format(channel))
-        print(adc.calibrate_zero(channel))
-    exit()
-
-
-if len(args.G) not in (0, adc.num_channels):
-    raise ValueError('Specify gain either for all channels or for none')
-for i in range(len(args.G)):
-    adc.set_gain(i, args.G[i])
-if args.g is not None:
-    for channel in args.g:
-        print('Calibrating gain of channel {}'.format(channel))
-        print(adc.calibrate_gain(channel))
-    exit()
-
-if args.verbose:
-    print('Starting measurements')
-
-counter = 0
-sum_of_powers = 0
-ssu = 0
-ssi = 0
-
-average_over_N_periods = 50 # every second at 50Hz
-num_periods = 0
-
-u = 0
-last_time = datetime.now()
+adc = ADC()
+meter = Meter(adc, args)
 
 while True:
-    last_u = u
-    i = adc.read(0)
-    u = adc.read(1)
-
-    sum_of_powers += i * u
-    ssu += u * u
-    ssi += i * i
-    counter += 1
-    if last_u <= 0 and u > 0:
-        num_periods += 1
-        now = datetime.now()
-        if num_periods == average_over_N_periods and now.second != last_time.second:
-            last_time = now
-
-            real_power = sum_of_powers / counter
-            vrms = np.sqrt(ssu / counter)
-            irms = np.sqrt(ssi / counter)
-            apparent_power = vrms * irms
-            power_factor = real_power / apparent_power
-            if args.verbose:
-                print('real power: {:3.1f}W, apparent power: {:3.1f}VA, power factor: {:2.1f}%, Vrms: {:3.1f}V, Irms: {:3.1f}A'.format(
-                real_power, apparent_power, 100*power_factor, vrms, irms))
-
-            rrd.update([real_power, apparent_power])
-            
-            if now.second % 10 == 0:
-                rrd.graph(start='1day')
-                rrd.graph(start='1week')
-                rrd.graph(start='1month')
-                rrd.graph(start='1year')
-
-
-
-            counter = 0
-            sum_of_powers = 0
-            num_periods = 0
-            ssu = 0
-            ssi = 0
-
+    meter.measure()
+    meter.graph()

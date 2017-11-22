@@ -70,7 +70,7 @@ class Channel:
         if length == 3 and args[2] == '?':
             # print RMS
             self.zero = float(args[1])
-            print('Channel {} calibration: measured {} units RMS'.format(
+            print('Channel {} calibration: measured {:.2f} units RMS'.format(
                 self.id, self.get_rms()))
             raise Channel.Calibrated
         elif length == 7:

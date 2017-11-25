@@ -3,6 +3,10 @@ POWER METER
 
 ### Run the power monitoring script
 
+Start the virtual environment
+
+    source venv/bin/activate
+
 Calibration is done in two steps
 1. Zero calibration
 
@@ -39,6 +43,13 @@ When all channels are calibrated, the monitoring script can be started like this
     python power_meter.py 0:0:C:507.1:0.025:#ff0000:"L1" 1:0:V:500.196:0.75::
 
 where the channel 0 is on phase 0, measuring current, zero calibration value is 507.1, gain calibration value 0.025, graph colour red and description "L1". On channel 1 there is a voltage transformer on phase 0 as well with its calibrationi values. No colour or description is given for this channel.
+
+
+### Run the power monitoring script on RPi startup
+
+Add the following line to /etc/rc.local before the exit 0 command
+
+    /home/pi/power-meter.git/software/run.sh
 
 ### Pushing web pages to a ftp server for public display
 

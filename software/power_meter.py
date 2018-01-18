@@ -115,13 +115,26 @@ class Channel:
         return self.read()
 
 
-    def get_rms(self, count=1000):
+    def get_rms(self, num_periods=50*5):
         """Return RMS"""
-        assert count > 0
+        # TODO measure over whole periods
+        assert num_periods > 0
         ssq = 0
-        for i in range(count):
+        count = 0
+        num_measurements = num_periods * 100
+        data = np.zeros((num_measurements,))
+        while count < num_measurements:
             x = self.read()
+            data[count] = x
             ssq += x*x
+            count += 1
+        print('num_measurements = ', num_measurements)
+        print('mean = ', np.mean(data))
+        print('rms  = ', np.sqrt(np.dot(data, data) / num_measurements))
+        print('max  = ', np.max(data))
+        print('min  = ', np.min(data))
+        print('PP   = ', np.max(data) - np.min(data))
+        print('mean PP=', (np.max(data) + np.min(data))/2)
         return np.sqrt(ssq / count)
 
 
@@ -133,11 +146,15 @@ class Meter:
             self.current_chn = current_channel
 
             self.sp = 0
+            self.rmsv = 0
+            self.rmsc = 0
             self.counter = 0
             self.num_periods = 0
             self.last_voltage = 0
 
-            self.last_reading = 0
+            self.last_real_power = 0
+            self.last_rmsv = 0
+            self.last_rmsc = 0
 
 
         @property
@@ -154,6 +171,8 @@ class Meter:
             voltage = self.voltage_chn.get()
             current = self.current_chn.get()
             self.sp += voltage * current
+            self.rmsv += voltage * voltage
+            self.rmsc += current * current
             self.counter += 1
 
             if self.last_voltage <= 0 and voltage > 0:
@@ -163,13 +182,20 @@ class Meter:
             fresh = False
             if self.num_periods == self.frequency:
                 real_power = self.sp / self.counter
-                self.sp = 0
-                self.counter = 0
-                self.num_periods = 0
-                self.last_reading = real_power
+                rmsv = np.sqrt(self.rmsv / self.counter)
+                rmsc = np.sqrt(self.rmsc / self.counter)
+                self.last_real_power = real_power
+                self.last_rmsv = rmsv
+                self.last_rmsc = rmsc
                 fresh = True
 
-            return self.last_reading, fresh
+                self.sp = 0
+                self.rmsv = 0
+                self.rmsc = 0
+                self.counter = 0
+                self.num_periods = 0
+
+            return self.last_real_power, self.last_rmsv, self.last_rmsc, fresh
 
 
             
@@ -219,6 +245,9 @@ class Meter:
             rrd_graph += 'DEF:ch{0}={1}:ch{0}:AVERAGE'.format(i, args.rrdfile),
             # TODO make color parametrizable
             rrd_graph += 'LINE1:ch{}{}:{}'.format(i, m.colour, m.description),
+        # TODO this is hardcoded..
+        rrd_graph += 'CDEF:sum=ch0,ch1,+,ch2,+',
+        rrd_graph += 'LINE1:sum#ffffff:sum',
 
         self.rrd = RRD(
             args.rrdfile,
@@ -270,19 +299,25 @@ class Meter:
         # Read current values on all channels
         for cid in self.channels:
             x = self.channels[cid].read()
+            #if self.verbose:
+            #    print('channel {}: {}'.format(cid, x))
 
         # compute power from previously read input values
         output = [0] * len(self.power_meters)
         do_update = False
         for i,meter in enumerate(self.power_meters):
-            real_power, fresh = meter.getRealPower()
+            real_power, rmsv, rmsc, fresh = meter.getRealPower()
             output[i] = real_power
+            if fresh:
+                if self.verbose:
+                    print('Meter {:}: {:6.1f}W, {:5.1f}VRMS, {:5.1f}ARMS'.format(i, real_power, rmsv, rmsc))
             # TODO fix this if for some reason the first channel is off
-            do_update = i == 0 and fresh
+            if i==0 and fresh:
+                do_update = True
 
         if do_update:
             if self.verbose:
-                print(output)
+                print('rrd update: ', output)
             self.rrd.update(output)
 
 

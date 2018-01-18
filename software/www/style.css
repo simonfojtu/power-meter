@@ -2,3 +2,10 @@ img.graph {
     max-width: 100%;
     height: auto;
 }
+
+.timestamp {
+    color: white;
+    font-size: 10;
+    text-align: right;
+    generic-family: "monospace";
+}
